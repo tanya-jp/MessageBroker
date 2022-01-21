@@ -1,9 +1,9 @@
 import socket
 
 # HOST = '127.0.0.1'
-PORT = 2022
+PORT = 3033
 MESSAGE_LENGTH_SIZE = 1024
-ENCODING = 'utf-8'
+ENCODING = 'ascii'
 
 
 def main():
@@ -11,8 +11,9 @@ def main():
     SERVER_INFORMATION = (address, PORT)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(SERVER_INFORMATION)
-    send_msg(s, "HELLO WORLD!")
-    send_msg(s, "DISCONNECT")
+    client_msg(s)
+    # send_msg(s, "HELLO WORLD!")
+    # send_msg(s, "DISCONNECT")
 
 
 def send_msg(client, msg):
@@ -23,6 +24,18 @@ def send_msg(client, msg):
 
     client.send(msg_length)
     client.send(message)
+
+
+def client_msg(client: socket.socket):
+    while True:
+        message = input()
+        split_msg = message.split()
+        if split_msg[0] == "subscribe":
+            if len(split_msg) < 2:
+                print("NO TOPIC DETECTED!")
+                print("Please try again.")
+                continue
+            send_msg(client, message)
 
 
 if __name__ == '__main__':
