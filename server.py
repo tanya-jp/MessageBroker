@@ -2,7 +2,7 @@ import socket
 import threading
 
 # HOST = '127.0.0.1'
-PORT = 1011
+PORT = 2022
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'utf-8'
 
@@ -21,6 +21,7 @@ def start(server):
     while True:
         conn, address = server.accept()
         t = threading.Thread(target = handle_client, args = (conn, address))
+        t.start()
 
 
 def handle_client(conn, address):
