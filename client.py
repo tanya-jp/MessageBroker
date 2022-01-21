@@ -1,19 +1,29 @@
 import socket
+import sys
 
 # HOST = '127.0.0.1'
-PORT = 3033
+# HOST = sys.argv[1]
+# PORT = sys.argv[2]
+
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'ascii'
+conn = None
 
 
 def main():
-    address = socket.gethostbyname(socket.gethostname())
-    SERVER_INFORMATION = (address, PORT)
+    if sys.argv[1] == "default":
+        HOST = socket.gethostbyname(socket.gethostname())
+    else:
+        HOST = sys.argv[1]
+    if sys.argv[2] == "default":
+        PORT = 5002
+    else:
+        PORT = sys.argv[2]
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    SERVER_INFORMATION = (HOST, int(PORT))
     s.connect(SERVER_INFORMATION)
     client_msg(s)
-    # send_msg(s, "HELLO WORLD!")
-    # send_msg(s, "DISCONNECT")
 
 
 def send_msg(client, msg):
@@ -26,22 +36,46 @@ def send_msg(client, msg):
     client.send(message)
 
 
+def server_msg(client: socket.socket):
+    client.settimeout(10.0)
+    while True:
+        message_length = int(client.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
+        msg = client.recv(message_length)
+        if not msg:
+            continue
+        msg = msg.decode(ENCODING)
+        # print(msg)
+        client.settimeout(None)
+        split_msg = msg.split()
+        if split_msg[0] == "subAck:":
+            print("Subscribing on ")
+            for m in split_msg[1:]:
+                print(m)
+
+
 def client_msg(client: socket.socket):
     while True:
-        message = input()
-        split_msg = message.split()
-        if split_msg[0] == "subscribe":
-            subscribe(client, message)
+        # message = input()
+        # split_msg = message.split()
+        if sys.argv[3] == "subscribe":
+            # print(sys.argv[4:])
+            subscribe(client, sys.argv[4:])
+        try:
+            server_msg(client)
+        except socket.error:
+            print("TIMEOUT: No response from server")
 
 
 def subscribe(client: socket.socket, message):
-    split_msg = message.split()
-    if split_msg[0] == "subscribe":
-        if len(split_msg) < 2:
-            print("NO TOPIC DETECTED!")
-            print("Please try again.")
-            return
-        send_msg(client, message)
+    # split_msg = message.split()
+    if len(message) < 2:
+        print("NO TOPIC DETECTED!")
+        print("Please try again.")
+        return
+    msg = "subscribe"
+    for m in message:
+        msg += " " + m
+    send_msg(client, msg)
 
 
 if __name__ == '__main__':

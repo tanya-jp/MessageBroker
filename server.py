@@ -2,7 +2,7 @@ import socket
 import threading
 
 # HOST = '127.0.0.1'
-PORT = 3033
+PORT = 5002
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'ascii'
 
@@ -73,8 +73,8 @@ def subscribe_handler(conn: socket.socket, message):
                 topics_members[msg].append(conn)
         else:
             topics_members[msg] = [conn]
-    print(topics_members)
-    msg = "subAck :"
+    # print(topics_members)
+    msg = "subAck:"
     for topic in topics_members.keys():
         if conn in topics_members[topic]:
             msg += " " + topic
