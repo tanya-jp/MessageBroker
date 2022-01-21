@@ -6,7 +6,8 @@ PORT = 3033
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'ascii'
 
-members = {}
+topics_members = {}
+clients = {}
 
 
 def main():
@@ -16,6 +17,15 @@ def main():
     s.bind(HOST_INFORMATION)
     print("[SERVER START] Server is listening ...")
     start(s)
+
+
+def start(server):
+    server.listen()
+    while True:
+        conn, address = server.accept()
+        clients[conn] = 0
+        t = threading.Thread(target=handle_client, args=(conn, address))
+        t.start()
 
 
 def send_msg(server, msg):
@@ -28,42 +38,55 @@ def send_msg(server, msg):
     server.send(message)
 
 
-def start(server):
-    server.listen()
-    while True:
-        conn, address = server.accept()
-        t = threading.Thread(target=handle_client, args=(conn, address))
-        t.start()
-
-
 def handle_client(conn, address):
     print("[NEW CONNECTION] connected from {}".format(address))
     Connected = True
     while Connected:
-        message_length = int(conn.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
-        msg = conn.recv(message_length).decode(ENCODING)
-        print("[MESSAGE RECEIVED] {}".format(msg))
-        split_msg = msg.split()
-        if split_msg[0] == "subscribe":
-            subscribe_handler(conn, split_msg[1:])
-        if msg == "DISCONNECT":
-            Connected = False
+        try:
+            message_length = int(conn.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
+            msg = conn.recv(message_length)
+            if not msg:
+                continue
+            msg = msg.decode(ENCODING)
+            print("[MESSAGE RECEIVED] {}".format(msg))
+            if msg == "DISCONNECT":
+                Connected = False
+            else:
+                execute_message(msg, conn)
+        except:
+            remove_client(conn)
+            print('Disconnected suddenly by', address)
+            break
     conn.close()
+
+
+def execute_message(msg, conn):
+    split_msg = msg.split()
+    if split_msg[0] == "subscribe":
+        subscribe_handler(conn, split_msg[1:])
 
 
 def subscribe_handler(conn: socket.socket, message):
     for msg in message:
-        if msg in members.keys():
-            if conn not in members[msg]:
-                members[msg].append(conn)
+        if msg in topics_members.keys():
+            if conn not in topics_members[msg]:
+                topics_members[msg].append(conn)
         else:
-            members[msg] = [conn]
-    print(members)
-    msg = "subscribing on :"
-    for topic in members.keys():
-        if conn in members[topic]:
+            topics_members[msg] = [conn]
+    print(topics_members)
+    msg = "subAck :"
+    for topic in topics_members.keys():
+        if conn in topics_members[topic]:
             msg += " " + topic
     send_msg(conn, msg)
+
+
+def remove_client(client):
+    for tm in topics_members:
+        if client in topics_members[tm]:
+            topics_members[tm].remove(client)
+    client.close()
+    print(topics_members)
 
 
 if __name__ == "__main__":

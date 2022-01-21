@@ -31,11 +31,17 @@ def client_msg(client: socket.socket):
         message = input()
         split_msg = message.split()
         if split_msg[0] == "subscribe":
-            if len(split_msg) < 2:
-                print("NO TOPIC DETECTED!")
-                print("Please try again.")
-                continue
-            send_msg(client, message)
+            subscribe(client, message)
+
+
+def subscribe(client: socket.socket, message):
+    split_msg = message.split()
+    if split_msg[0] == "subscribe":
+        if len(split_msg) < 2:
+            print("NO TOPIC DETECTED!")
+            print("Please try again.")
+            return
+        send_msg(client, message)
 
 
 if __name__ == '__main__':
