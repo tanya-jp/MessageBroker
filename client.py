@@ -16,7 +16,7 @@ def main():
     else:
         HOST = sys.argv[1]
     if sys.argv[2] == "default":
-        PORT = 5003
+        PORT = 5005
     else:
         PORT = sys.argv[2]
 
@@ -41,17 +41,29 @@ def server_msg(client: socket.socket):
     while True:
         message_length = int(client.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
         msg = client.recv(message_length)
+        # msg = client.recv(1024)
         if not msg:
             continue
         msg = msg.decode(ENCODING)
         print(msg)
+        message = msg
         client.settimeout(None)
-        split_msg = msg.split()
+        split_msg = message.split()
         if split_msg[0] == "subAck:":
             print("Subscribing on ")
             for m in split_msg[1:]:
                 print(m)
+        elif msg == "pubAck":
+            print("Message published successfully")
+            sys.exit()
+        elif msg == "INVALID TOPIC!":
+            sys.exit()
 
+        elif split_msg[0] == 'pong':
+            print("PONG!")
+            break
+        elif split_msg[0] == 'ping':
+            pong(client)
 
 
 def client_msg(client: socket.socket):
@@ -88,6 +100,14 @@ def publish(client: socket.socket, message):
     for m in message:
         msg += " " + m
     send_msg(client, msg)
+
+
+def ping(client: socket.socket):
+    send_msg(client, "ping")
+
+
+def pong(client: socket.socket):
+    send_msg(client, "pong")
 
 
 if __name__ == '__main__':

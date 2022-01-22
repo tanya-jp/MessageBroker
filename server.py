@@ -2,7 +2,7 @@ import socket
 import threading
 
 # HOST = '127.0.0.1'
-PORT = 5003
+PORT = 5005
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'ascii'
 
@@ -64,6 +64,7 @@ def execute_message(msg, conn):
     split_msg = msg.split()
     if split_msg[0] == "subscribe":
         subscribe_handler(conn, split_msg[1:])
+        # return True
     elif split_msg[0] == "publish":
         print(msg)
         publish_handler(conn, msg)
@@ -91,27 +92,22 @@ def publish_handler(conn: socket.socket, message):
     topic = message.partition(' ')[0]
     msg = topic + ":"
     msg += message.partition(' ')[2]
-    # print(topic)
-    # print(message)
-    # print(topics_members)
     if topic not in topics_members.keys():
         send_msg(conn, "INVALID TOPIC!")
-        return
     else:
         send_msg(conn, "pubAck")
-    for client in topics_members[topic]:
-        try:
-            send_msg(client, msg)
-        except:
-            remove_client(client)
+        for client in topics_members[topic]:
+            try:
+                send_msg(client, msg)
+            except:
+                remove_client(client)
 
 
-
-def remove_client(client):
+def remove_client(conn: socket.socket):
     for tm in topics_members:
-        if client in topics_members[tm]:
-            topics_members[tm].remove(client)
-    client.close()
+        if conn in topics_members[tm]:
+            topics_members[tm].remove(conn)
+    conn.close()
     print(topics_members)
 
 
