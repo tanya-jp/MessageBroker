@@ -16,7 +16,7 @@ def main():
     else:
         HOST = sys.argv[1]
     if sys.argv[2] == "default":
-        PORT = 5002
+        PORT = 5003
     else:
         PORT = sys.argv[2]
 
@@ -44,13 +44,14 @@ def server_msg(client: socket.socket):
         if not msg:
             continue
         msg = msg.decode(ENCODING)
-        # print(msg)
+        print(msg)
         client.settimeout(None)
         split_msg = msg.split()
         if split_msg[0] == "subAck:":
             print("Subscribing on ")
             for m in split_msg[1:]:
                 print(m)
+
 
 
 def client_msg(client: socket.socket):
@@ -60,6 +61,8 @@ def client_msg(client: socket.socket):
         if sys.argv[3] == "subscribe":
             # print(sys.argv[4:])
             subscribe(client, sys.argv[4:])
+        elif sys.argv[3] == "publish":
+            publish(client, sys.argv[4:])
         try:
             server_msg(client)
         except socket.error:
@@ -73,6 +76,15 @@ def subscribe(client: socket.socket, message):
         print("Please try again.")
         return
     msg = "subscribe"
+    for m in message:
+        msg += " " + m
+    send_msg(client, msg)
+
+
+def publish(client: socket.socket, message):
+    msg = "publish "
+    msg += message[0] + " "
+    message = message[1:]
     for m in message:
         msg += " " + m
     send_msg(client, msg)
