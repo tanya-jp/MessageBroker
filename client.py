@@ -36,18 +36,18 @@ def send_msg(client, msg):
     client.send(message)
 
 
-def server_msg(client: socket.socket):
-    client.settimeout(10.0)
+def server_msg(conn: socket.socket):
+    conn.settimeout(10.0)
     while True:
-        message_length = int(client.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
-        msg = client.recv(message_length)
+        message_length = int(conn.recv(MESSAGE_LENGTH_SIZE).decode(ENCODING))
+        msg = conn.recv(message_length)
         # msg = client.recv(1024)
         if not msg:
             continue
         msg = msg.decode(ENCODING)
-        print(msg)
+        # print(msg)
         message = msg
-        client.settimeout(None)
+        conn.settimeout(None)
         split_msg = message.split()
         if split_msg[0] == "subAck:":
             print("Subscribing on ")
@@ -57,31 +57,35 @@ def server_msg(client: socket.socket):
             print("Message published successfully")
             sys.exit()
         elif msg == "INVALID TOPIC!":
+            print(msg)
             sys.exit()
-
         elif split_msg[0] == 'pong':
             print("PONG!")
-            break
+            sys.exit()
         elif split_msg[0] == 'ping':
-            pong(client)
+            pong(conn)
 
 
-def client_msg(client: socket.socket):
+def client_msg(conn: socket.socket):
     while True:
         # message = input()
         # split_msg = message.split()
         if sys.argv[3] == "subscribe":
             # print(sys.argv[4:])
-            subscribe(client, sys.argv[4:])
+            subscribe(conn, sys.argv[4:])
         elif sys.argv[3] == "publish":
-            publish(client, sys.argv[4:])
+            publish(conn, sys.argv[4:])
+        elif sys.argv[3] == "ping":
+            ping(conn)
+        elif sys.argv[3] == "pong":
+            pong(conn)
         try:
-            server_msg(client)
+            server_msg(conn)
         except socket.error:
             print("TIMEOUT: No response from server")
 
 
-def subscribe(client: socket.socket, message):
+def subscribe(conn: socket.socket, message):
     # split_msg = message.split()
     if len(message) < 2:
         print("NO TOPIC DETECTED!")
@@ -90,16 +94,16 @@ def subscribe(client: socket.socket, message):
     msg = "subscribe"
     for m in message:
         msg += " " + m
-    send_msg(client, msg)
+    send_msg(conn, msg)
 
 
-def publish(client: socket.socket, message):
+def publish(conn: socket.socket, message):
     msg = "publish "
     msg += message[0] + " "
     message = message[1:]
     for m in message:
         msg += " " + m
-    send_msg(client, msg)
+    send_msg(conn, msg)
 
 
 def ping(client: socket.socket):

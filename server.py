@@ -68,6 +68,10 @@ def execute_message(msg, conn):
     elif split_msg[0] == "publish":
         print(msg)
         publish_handler(conn, msg)
+    elif split_msg[0] == "ping":
+        pong(conn)
+    elif split_msg[0] == "pong":
+        ping(conn)
 
 
 def subscribe_handler(conn: socket.socket, message):
@@ -109,6 +113,13 @@ def remove_client(conn: socket.socket):
             topics_members[tm].remove(conn)
     conn.close()
     print(topics_members)
+
+def ping(conn: socket.socket):
+    send_msg(conn, "ping")
+
+
+def pong(conn: socket.socket):
+    send_msg(conn, "pong")
 
 
 if __name__ == "__main__":
