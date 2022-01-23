@@ -1,18 +1,17 @@
 import socket
 import threading
 
-# HOST = '127.0.0.1'
+HOST = '127.0.0.1'
 PORT = 1373
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'ascii'
 
 topics_members = {}
-clients = {}
 
 
 def main():
-    address = socket.gethostbyname(socket.gethostname())
-    HOST_INFORMATION = (address, PORT)
+    # HOST = socket.gethostbyname(socket.gethostname())
+    HOST_INFORMATION = (HOST, PORT)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(HOST_INFORMATION)
     print("[SERVER START] Server is listening ...")
@@ -23,7 +22,6 @@ def start(server):
     server.listen()
     while True:
         conn, address = server.accept()
-        clients[conn] = 0
         t = threading.Thread(target=handle_client, args=(conn, address))
         t.start()
 
@@ -81,7 +79,7 @@ def subscribe_handler(conn: socket.socket, message):
                 topics_members[msg].append(conn)
         else:
             topics_members[msg] = [conn]
-    # print(topics_members)
+
     msg = "subAck:"
     for topic in topics_members.keys():
         if conn in topics_members[topic]:
@@ -89,8 +87,6 @@ def subscribe_handler(conn: socket.socket, message):
     send_msg(conn, msg)
 
 
-# client.py default default publish salam hi boto
-# client.py default default subscribe salam topic1
 def publish_handler(conn: socket.socket, message):
     message = message.partition(' ')[2]
     topic = message.partition(' ')[0]
@@ -107,13 +103,6 @@ def publish_handler(conn: socket.socket, message):
                 remove_client(client)
 
 
-def remove_client(conn: socket.socket):
-    for tm in topics_members:
-        if conn in topics_members[tm]:
-            topics_members[tm].remove(conn)
-    conn.close()
-    print(topics_members)
-
 def ping(conn: socket.socket):
     send_msg(conn, "ping")
 
@@ -121,6 +110,13 @@ def ping(conn: socket.socket):
 def pong(conn: socket.socket):
     send_msg(conn, "pong")
 
+
+def remove_client(conn: socket.socket):
+    for tm in topics_members:
+        if conn in topics_members[tm]:
+            topics_members[tm].remove(conn)
+    conn.close()
+    print(topics_members)
 
 if __name__ == "__main__":
     main()

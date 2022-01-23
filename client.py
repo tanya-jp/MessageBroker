@@ -11,16 +11,12 @@ conn = None
 
 
 def main():
-    if len(sys.argv) < 4:
+    if len(sys.argv) <= 3:
         print("INVALID INPUT!")
         sys.exit()
-
-    if sys.argv[3] != "ping" and sys.argv[3] != "pong":
-        print("INVALID INPUT!")
-        sys.exit()
-
     if sys.argv[1] == "default":
-        HOST = socket.gethostbyname(socket.gethostname())
+        # HOST = socket.gethostbyname(socket.gethostname())
+        HOST = '127.0.0.1'
     else:
         HOST = sys.argv[1]
     if sys.argv[2] == "default":
@@ -77,7 +73,6 @@ def server_msg(conn: socket.socket):
 def client_msg(conn: socket.socket):
     while True:
         if sys.argv[3] == "subscribe":
-            # print(sys.argv[4:])
             subscribe(conn, sys.argv[4:])
         elif sys.argv[3] == "publish":
             publish(conn, sys.argv[4:])
@@ -108,6 +103,12 @@ def subscribe(conn: socket.socket, message):
 
 def publish(conn: socket.socket, message):
     msg = "publish "
+    if len(message) == 0:
+        print("NO TOPIC OR MESSAGE DETECTED!")
+        sys.exit()
+    if len(message) == 1:
+        print("NO MESSAGE DETECTED!")
+        sys.exit()
     msg += message[0] + " "
     message = message[1:]
     for m in message:
