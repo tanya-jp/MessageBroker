@@ -11,12 +11,20 @@ conn = None
 
 
 def main():
+    if len(sys.argv) < 4:
+        print("INVALID INPUT!")
+        sys.exit()
+
+    if sys.argv[3] != "ping" and sys.argv[3] != "pong":
+        print("INVALID INPUT!")
+        sys.exit()
+
     if sys.argv[1] == "default":
         HOST = socket.gethostbyname(socket.gethostname())
     else:
         HOST = sys.argv[1]
     if sys.argv[2] == "default":
-        PORT = 5005
+        PORT = 1373
     else:
         PORT = sys.argv[2]
 
@@ -45,7 +53,7 @@ def server_msg(conn: socket.socket):
         if not msg:
             continue
         msg = msg.decode(ENCODING)
-        # print(msg)
+        print(msg)
         message = msg
         conn.settimeout(None)
         split_msg = message.split()
@@ -60,7 +68,7 @@ def server_msg(conn: socket.socket):
             print(msg)
             sys.exit()
         elif split_msg[0] == 'pong':
-            print("PONG!")
+            # print("PONG!")
             sys.exit()
         elif split_msg[0] == 'ping':
             pong(conn)
@@ -68,8 +76,6 @@ def server_msg(conn: socket.socket):
 
 def client_msg(conn: socket.socket):
     while True:
-        # message = input()
-        # split_msg = message.split()
         if sys.argv[3] == "subscribe":
             # print(sys.argv[4:])
             subscribe(conn, sys.argv[4:])
@@ -77,8 +83,11 @@ def client_msg(conn: socket.socket):
             publish(conn, sys.argv[4:])
         elif sys.argv[3] == "ping":
             ping(conn)
-        elif sys.argv[3] == "pong":
-            pong(conn)
+        # elif sys.argv[3] == "pong":
+        #     pong(conn)
+        else:
+            print("INVALID INPUT!")
+            sys.exit()
         try:
             server_msg(conn)
         except socket.error:
@@ -87,10 +96,10 @@ def client_msg(conn: socket.socket):
 
 def subscribe(conn: socket.socket, message):
     # split_msg = message.split()
-    if len(message) < 2:
+    if len(message) < 1:
         print("NO TOPIC DETECTED!")
         print("Please try again.")
-        return
+        sys.exit()
     msg = "subscribe"
     for m in message:
         msg += " " + m

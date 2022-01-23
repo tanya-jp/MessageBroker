@@ -2,7 +2,7 @@ import socket
 import threading
 
 # HOST = '127.0.0.1'
-PORT = 5005
+PORT = 1373
 MESSAGE_LENGTH_SIZE = 1024
 ENCODING = 'ascii'
 
