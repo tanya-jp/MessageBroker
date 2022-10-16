@@ -21,6 +21,16 @@ Since all connections between server and clients are implemented based on `TCP`,
 
 - If 10 sec after sending ping to client, server does not receive any responses, it prints client's IP address and port.
 
+## How to Run
+### Server
+    $ server.py
+### Clients
+    $ client.py {HOST IP(or default)} {PORT (or default)} {ORDER}
+- Order includes: **subscribe**, **publish**, or **ping**. 
+- The subscribe order needs the fourth argument, which is the wanted topic. It is notable that the topics are separated with space and if a topic contains more than one word, underline is needed. 
+- The publisher order needs fourth and fifth arguments. The fourth one is the wanted topic, which must be one of the available ones, then the fifth one is the message that this client wants to publish and can contain space.
+- The number of input arguments is important and if they are less than wanted arguments, a message is printed.
+
 ## Input and Output
 ![image](https://user-images.githubusercontent.com/72709191/195670330-358ccf07-a4f6-46e2-b620-7db5f7bcd7a5.png)
 <p align="center">
